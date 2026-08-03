@@ -27,6 +27,19 @@ function tileDraw(ctx, tile, S, tileMm, W, H, op) {
   ctx.restore();
 }
 
+// G 通道乘法叠图：把 overlay 乘到 base 的 mask 区（其余像素不变）
+function maskMultiply(base, overlay, mask) {
+  const t = mk(base.width, base.height);
+  const tg = t.getContext('2d');
+  tg.drawImage(overlay, 0, 0);
+  tg.globalCompositeOperation = 'destination-in';
+  tg.drawImage(mask, 0, 0);
+  const bg = base.getContext('2d');
+  bg.globalCompositeOperation = 'multiply';
+  bg.drawImage(t, 0, 0);
+  bg.globalCompositeOperation = 'source-over';
+}
+
 // 低频值噪声（镭射膜厚扰动）：两级随机网格双线性放大后按权重平均，值域约 [0.25, 1]
 function lowFreqNoise(W, H) {
   const grid = n => {
@@ -128,21 +141,26 @@ export function bakeAtlas(o) {
     maskDraw(colorC, holoTone, holoC);
   }
 
-  // —— metalness：纸张 metalBase 打底（银卡类全幅金属），金/银箔区并集为白 ——
+  // —— metalness：R=iridescence mask、G=膜厚（255=Range 上限，同无厚度图行为）、B=金属度——
+  // 三通道打包一张贴图（three.js 分通道采样），为 iridescence 省下一个纹理单元（真机上限 16）
   const metalBase = Math.max(0, Math.min(1, paper.metalBase || 0));
   const metalC = mk(W, H), mc = metalC.getContext('2d');
   const mv = Math.round(metalBase * 255);
-  mc.fillStyle = 'rgb(' + mv + ',' + mv + ',' + mv + ')'; mc.fillRect(0, 0, W, H);
+  mc.fillStyle = 'rgb(' + mv + ',255,' + mv + ')'; mc.fillRect(0, 0, W, H);
   if (anyFoil) {
     const full = mk(W, H), fg0 = full.getContext('2d');
     fg0.fillStyle = '#fff'; fg0.fillRect(0, 0, W, H);
     if (hasFoil) maskDraw(metalC, full, foilC);
     if (hasSilver) maskDraw(metalC, full, silverC);
   }
-  if (hasHolo) { // 镭射区并入金属通道：iridescenceMap（=metal 通道）自动覆盖镭射区；0.85 留少量漫反射防死黑
-    const fullH2 = mk(W, H), fh2 = fullH2.getContext('2d');
-    fh2.fillStyle = 'rgb(216,216,216)'; fh2.fillRect(0, 0, W, H);
-    maskDraw(metalC, fullH2, holoC);
+  if (hasHolo) {
+    const hb = mk(W, H), hg = hb.getContext('2d');
+    hg.fillStyle = 'rgb(255,255,216)'; hg.fillRect(0, 0, W, H); // R=255 满 iridescence、B=0.85 金属（留漫反射防死黑）
+    maskDraw(metalC, hb, holoC);
+    const noiseG = mk(W, H), ng = noiseG.getContext('2d'); // 仅 G 通道压入膜厚噪声：R/B 保持
+    ng.fillStyle = 'rgb(255,0,255)'; ng.fillRect(0, 0, W, H);
+    ng.globalCompositeOperation = 'lighten'; ng.drawImage(lowFreqNoise(W, H), 0, 0);
+    maskMultiply(metalC, noiseG, holoC);
   }
 
   // —— 压纹高度：中灰为零，白凸黑凹；顶层覆盖重叠区 ——
@@ -195,14 +213,6 @@ export function bakeAtlas(o) {
     maskDraw(roughC, holoR, holoC);
   }
 
-  // —— 镭射膜厚扰动图：白底（=厚度图 Range 上限，与无厚度图行为一致），holo 区叠低频值噪声产生块状多彩 ——
-  const holoThickC = hasHolo ? mk(W, H) : null;
-  if (hasHolo) {
-    const tg = holoThickC.getContext('2d');
-    tg.fillStyle = '#fff'; tg.fillRect(0, 0, W, H);
-    maskDraw(holoThickC, lowFreqNoise(W, H), holoC);
-  }
-
   // —— clearcoat：覆膜基础值（map 驱动）+ 局部 UV 区 ——
   const ccC = mk(W, H), ccRC = mk(W, H);
   paintFilmChannels({ ccC, ccRC, maskUv: uvC, hasSuv }, filmId, o);
@@ -217,7 +227,7 @@ export function bakeAtlas(o) {
 
   return {
     colorC, normalPaper, normalFull, roughC, metalC, ccC, ccRC, dispC, checkerC,
-    maskFoil: foilC, maskSilver: silverC, maskUv: uvC, maskGloss: glossC, maskHolo: holoC, holoThickC, maskEmbUp: emb.up, maskEmbDown: emb.down,
+    maskFoil: foilC, maskSilver: silverC, maskUv: uvC, maskGloss: glossC, maskHolo: holoC, maskEmbUp: emb.up, maskEmbDown: emb.down,
     hasFoil: anyFoil, hasSilver, hasSuv, hasGloss, hasEmb, hasHolo, hasEmbUp: emb.hasUp, hasEmbDown: emb.hasDown, S, W, H,
     // UV 必须按实际烘焙画布（含出血外扩与像素取整）归一化；若仍使用原始 sbb，
     // 3D 面板边缘会采到出血画布里的纸基色，表现为单侧或三侧漏白/漏黑。

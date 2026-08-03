@@ -409,8 +409,8 @@ export class BoxEngine {
   setStudio() {
     if (this.studio) this.studio.dispose();
     const shadowQuery = new URLSearchParams(location.search);
-    const requestedSamples = shadowQuery.get('dev3d') === '1' ? +shadowQuery.get('shadowSamples') : this.num('shadowSamples', 7);
-    const shadowSamples = [3, 5, 7].includes(requestedSamples) ? requestedSamples : 7; // ?shadowSamples=3|5|7 仅用于 Dev3D 性能/视觉对照
+    const requestedSamples = shadowQuery.get('dev3d') === '1' ? +shadowQuery.get('shadowSamples') : this.num('shadowSamples', 5);
+    const shadowSamples = [3, 5, 7].includes(requestedSamples) ? requestedSamples : 5; // ?shadowSamples=3|5|7 仅用于 Dev3D 性能/视觉对照；默认 5：7 个样本灯 +8 贴图 +env 恰好顶满 16 纹理单元，iridescence 无处安放
     this.studio = setupStudio(this.renderer, this.scene, shadowSamples);
     this.studio.setEnvironment(this.props.environment || 'studio_small_08');
     this.studio.setLights(this.props.lightsSpec);
