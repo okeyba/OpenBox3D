@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>pdf view</title>
+</head>
+<body style="margin:0;background:#888">
+<canvas id="cv"></canvas>
+<script type="module">
+import { exportPDF } from '/src/export/pdf.js';
+import * as pdfjs from 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.min.mjs';
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs';
+let captured = null;
+URL.createObjectURL = blob => { captured = blob; return 'blob:fake'; };
+document.createElement = ((orig) => function (tag) {
+  const el = orig.call(document, tag);
+  if (tag === 'a') el.click = () => {};
+  return el;
+})(document.createElement.bind(document));
+const s = {
+  tpl: 'rte', L: 80, W: 40, H: 120, bleed: 3, glue: 14, ovr: {}, typeOvr: {},
+  embDir: 'up', embDepth: 0.3,
+  layers: [
+    { id: 1, kind: 'shape', x: 57.7, y: 68, w: 46, h: 32, content: '主视觉色块', color: '#b96f3b', finish: 'none', visible: true },
+    { id: 2, kind: 'text', x: 80.7, y: 48, content: '匠心茶礼', font: 'Noto Serif SC', size: 11, weight: 700, color: '#211d18', finish: 'foil', visible: true },
+    { id: 3, kind: 'text', x: 80.7, y: 57, content: '高山云雾 · 手作礼盒', font: 'Noto Sans SC', size: 4.2, weight: 400, color: '#5c554a', finish: 'none', visible: true },
+    { id: 4, kind: 'shape', x: 68.7, y: 106, w: 24, h: 1.4, content: '色带', color: '#9a5b1f', finish: 'uv', visible: true },
+    { id: 5, kind: 'text', x: 80.7, y: 48, content: '匠心茶礼', font: 'Noto Serif SC', size: 11, weight: 700, color: '#211d18', finish: 'emboss', visible: true }
+  ]
+};
+const mat = { id: 'sbs350', t: 0.45 };
+await exportPDF(s, mat, new URLSearchParams(location.search).get('mode') || 'cmyk');
+const data = new Uint8Array(await captured.arrayBuffer());
+const pdf = await pdfjs.getDocument({ data }).promise;
+const page = await pdf.getPage(1);
+const vp = page.getViewport({ scale: 1.6 });
+const cv = document.getElementById('cv');
+cv.width = vp.width; cv.height = vp.height;
+await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+document.title = 'rendered';
+</script>
+</body>
+</html>

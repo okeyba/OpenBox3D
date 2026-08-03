@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>bake test</title></head>
+<body style="margin:0;background:#888">
+<div id="out">running…</div>
+<script type="module">
+import { bakeAtlas } from '/src/render3d/bake.js';
+import { composeEmbossChannels } from '/src/design/emboss.js';
+
+// 生成透明底猫形 logo（黑形 + alpha）
+const logo = document.createElement('canvas');
+logo.width = logo.height = 256;
+const g = logo.getContext('2d');
+g.fillStyle = '#1a1a1a';
+// 头
+g.beginPath(); g.arc(128, 148, 86, 0, Math.PI * 2); g.fill();
+// 耳
+g.beginPath(); g.moveTo(62, 92); g.lineTo(50, 26); g.lineTo(106, 62); g.closePath(); g.fill();
+g.beginPath(); g.moveTo(194, 92); g.lineTo(206, 26); g.lineTo(150, 62); g.closePath(); g.fill();
+// 尾（弧线）
+g.strokeStyle = '#1a1a1a'; g.lineWidth = 16; g.lineCap = 'round';
+g.beginPath(); g.moveTo(210, 220); g.quadraticCurveTo(250, 190, 236, 150); g.stroke();
+// 眼（镂空）
+g.globalCompositeOperation = 'destination-out';
+g.beginPath(); g.arc(96, 140, 14, 0, Math.PI * 2); g.fill();
+g.beginPath(); g.arc(160, 140, 14, 0, Math.PI * 2); g.fill();
+const img = new Image();
+await new Promise(res => { img.onload = res; img.src = logo.toDataURL(); });
+
+const mkLayer = (finish, x, embDir) => ({ id: 1, kind: 'image', x, y: 20, w: 60, h: 60, content: 'logo', finish, embDir, visible: true, img, imgW: 256, imgH: 256, pxw: 256 });
+const layers = [mkLayer('foil', 10), mkLayer('emboss', 70, 'up'), mkLayer('emboss', 100, 'down')];
+const baked = bakeAtlas({
+  layers, sbb: [0, 0, 160, 100], bleed: 2, matId: 'sbs',
+  embDepth: 0.3, embDir: 'up', embBoost: true
+});
+const out = document.getElementById('out');
+out.textContent = '';
+const tag = (t) => { const d = document.createElement('div'); d.textContent = t; d.style.cssText = 'color:#fff;font:12px monospace'; out.appendChild(d); };
+const exact = composeEmbossChannels({ layers: [
+  { kind: 'shape', x: 10, y: 10, w: 60, h: 60, finish: 'emboss', embDir: 'up', visible: true },
+  { kind: 'shape', x: 40, y: 40, w: 60, h: 60, finish: 'emboss', embDir: 'down', visible: true },
+  { kind: 'shape', x: 120, y: 10, w: 20, h: 20, finish: 'emboss', visible: true }
+], W: 160, H: 100, S: 1, fallbackDir: 'down' });
+const px = (c, x, y) => c.getContext('2d').getImageData(x, y, 1, 1).data[0];
+tag('ASSERT top-overlap-down=' + (px(exact.signed, 50, 50) === 0 && px(exact.up, 50, 50) === 0 && px(exact.down, 50, 50) === 255));
+tag('ASSERT legacy-fallback-down=' + (px(exact.signed, 125, 15) === 0));
+const covered = composeEmbossChannels({ layers: [
+  { kind: 'shape', x: 10, y: 10, w: 40, h: 40, finish: 'emboss', embDir: 'up', visible: true },
+  { kind: 'shape', x: 10, y: 10, w: 40, h: 40, finish: 'emboss', embDir: 'down', visible: true }
+], W: 64, H: 64, S: 1 });
+tag('ASSERT fully-covered-up-omitted=' + (!covered.hasUp && covered.hasDown));
+const panels = [{ panelId: 'p', pts: [[0, 0], [30, 0], [30, 50], [0, 50]] }];
+const clippedEmb = composeEmbossChannels({ layers: [
+  { kind: 'shape', panelId: 'p', x: 10, y: 10, w: 40, h: 30, finish: 'emboss', embDir: 'up', visible: true }
+], panels, W: 60, H: 60, S: 1 });
+tag('ASSERT panel-clip-emboss=' + (px(clippedEmb.up, 20, 20) === 255 && px(clippedEmb.up, 40, 20) === 0));
+const clippedBake = bakeAtlas({
+  layers: [{ kind: 'shape', panelId: 'p', x: 10, y: 10, w: 40, h: 30, finish: 'foil', visible: true }],
+  panels, sbb: [0, 0, 60, 60], bleed: 2, paperId: 'coated-white', filmId: 'none', foilOn: true
+});
+const bx = x => Math.round((x + 2) * clippedBake.S), by = y => Math.round((y + 2) * clippedBake.S);
+tag('ASSERT panel-clip-bake=' + (px(clippedBake.maskFoil, bx(20), by(20)) === 255 && px(clippedBake.maskFoil, bx(40), by(20)) === 0));
+const ab = clippedBake.atlasSbb;
+tag('ASSERT atlas-sbb-includes-bleed=' + (
+  Math.abs(ab[0] + 2) < 1e-9 && Math.abs(ab[1] + 2) < 1e-9
+  && Math.abs((ab[2] - ab[0]) * clippedBake.S - clippedBake.W) < 1e-7
+  && Math.abs((ab[3] - ab[1]) * clippedBake.S - clippedBake.H) < 1e-7
+));
+tag('signed=' + baked.hasEmb + ' up=' + baked.hasEmbUp + ' down=' + baked.hasEmbDown + ' (top down layer overrides overlap)');
+[['albedo(colorC)', baked.colorC], ['metalness(maskFoil)', baked.maskFoil], ['signed height (gray=0 white=up black=down)', baked.dispC], ['emboss up plate', baked.maskEmbUp], ['emboss down plate', baked.maskEmbDown], ['normal', baked.normalFull]].forEach(p => {
+  tag(p[0]);
+  p[1].style.cssText = 'width:480px;border:1px solid #333;display:block;margin:4px 0 12px';
+  out.appendChild(p[1]);
+});
+document.title = 'done';
+</script>
+</body>
+</html>

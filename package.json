@@ -1,0 +1,29 @@
+{
+  "name": "openbox3d",
+  "version": "0.1.0",
+  "description": "OpenBox3D 苏哇工作台 — 浏览器内的包装盒设计工作台：参数化刀版、分层设计、PBR 3D 折叠预览与印刷 PDF 导出",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuyou-dev/OpenBox3D.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "npm run check:template-sync",
+    "build": "vite build",
+    "build:pages": "npm run check:template-sync && vite build --base=/OpenBox3D/",
+    "check:template-sync": "node scripts/check-template-sync.mjs",
+    "preset:from": "node scripts/boxproj-to-preset.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "0.184.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
