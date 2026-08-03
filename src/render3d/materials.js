@@ -22,7 +22,7 @@ export function makeAtlasTextures(baked) {
     cc: mk(baked.ccC), ccR: mk(baked.ccRC),
     disp: mk(baked.dispC),
     checker: mk(baked.checkerC, true),
-    maskFoil: mk(foilAll, true), maskUv: mk(baked.maskUv, true), maskGloss: mk(baked.maskGloss, true), dispCheck: mk(baked.dispC, true)
+    maskFoil: mk(foilAll, true), maskUv: mk(baked.maskUv, true), maskGloss: mk(baked.maskGloss, true), maskHolo: baked.maskHolo ? mk(baked.maskHolo, true) : null, holoThick: baked.holoThickC ? mk(baked.holoThickC) : null, dispCheck: mk(baked.dispC, true)
   };
 }
 
@@ -38,7 +38,7 @@ export function applyFaceMaterial(faceMat, appearance, tex, flags) {
   // 检查模式：单通道直出，关闭其余贴图
   if (check !== 'art') {
     faceMat.color.set(0xffffff);
-    faceMat.map = check === 'checker' ? tex.checker : check === 'foil' ? tex.maskFoil : check === 'suv' ? tex.maskUv : check === 'gloss' ? tex.maskGloss : tex.dispCheck;
+    faceMat.map = check === 'checker' ? tex.checker : check === 'foil' ? tex.maskFoil : check === 'suv' ? tex.maskUv : check === 'gloss' ? tex.maskGloss : check === 'holo' ? tex.maskHolo : tex.dispCheck;
     faceMat.roughnessMap = null; faceMat.roughness = check === 'emb' ? 0.4 : 0.65;
     faceMat.metalnessMap = null; faceMat.metalness = 0;
     faceMat.clearcoatMap = null; faceMat.clearcoatRoughnessMap = null; faceMat.clearcoat = 0;
@@ -74,10 +74,13 @@ export function applyFaceMaterial(faceMat, appearance, tex, flags) {
   const roughnessFactor = appearance.filmRoughnessFactor == null ? film.roughnessFactor : appearance.filmRoughnessFactor;
   faceMat.roughness = Math.max(0.12, Math.min(1, appearance.roughness == null ? paper.roughness * roughnessFactor : appearance.roughness * roughnessFactor));
   faceMat.sheen = Math.max(paper.sheen || 0, Math.max(0, Math.min(1, appearance.filmSheen == null ? film.sheen : appearance.filmSheen))); faceMat.sheenRoughness = film.id === 'soft' ? 0.82 : 0.9; faceMat.sheenColor.set(0xf7efe3);
-  // 镭射烫：iridescence 薄膜干涉，metalnessMap 限定在箔区（银卡类 metalBase 高时慎用，iridescence 置 0 即可）
+  // 镭射：iridescence 薄膜干涉，metalnessMap 限定在箔+镭射区（银卡类 metalBase 高时慎用，iridescence 置 0 即可）；
+  // 有镭射图层时挂膜厚扰动图（holoThick），产生块状多彩；无镭射图层保持原厚度上限行为，不影响既有箔区镭射。
+  // IOR 1.8 + 厚度上限 800nm：幻彩在柔白环境下也能显色（1.3/400nm 实测被平均成灰）。
   const iridescence = Math.max(0, Math.min(1, appearance.iridescence || 0));
-  faceMat.iridescence = iridescence; faceMat.iridescenceIOR = 1.3; faceMat.iridescenceThicknessRange = [100, 400];
+  faceMat.iridescence = iridescence; faceMat.iridescenceIOR = 1.8; faceMat.iridescenceThicknessRange = [80, 800];
   faceMat.iridescenceMap = iridescence > 0 ? tex.metal : null;
+  faceMat.iridescenceThicknessMap = iridescence > 0 && tex.holoThick ? tex.holoThick : null;
   // 环境能量唯一由 scene.environmentIntensity 控制；材质不再二次叠乘。
   faceMat.envMapIntensity = 1;
   const paperSpec = paper.specularIntensity == null ? (paper.id === 'black-card' ? 0.72 : 1) : paper.specularIntensity;

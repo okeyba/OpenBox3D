@@ -38,7 +38,7 @@ export function OutputView() {
     { k: '刀线', v: g.cutN + ' 切 · ' + g.creaseN + ' 压 · 线型调整 ' + typeOvrCount },
     { k: '设计图层', v: s.layers.length + ' 层' }
   ];
-  const outFins = ['foil', 'silver', 'uv', 'gloss'].map(f => ({ k: FIN_NAMES[f] + '版', v: s.layers.filter(l => l.finish === f).map(layerNameOf).join('、') || '—' }))
+  const outFins = ['foil', 'silver', 'uv', 'gloss', 'holo'].map(f => ({ k: FIN_NAMES[f] + '版', v: s.layers.filter(l => l.finish === f).map(layerNameOf).join('、') || '—' }))
     .concat(['up', 'down'].map(dir => ({ k: (dir === 'up' ? '击凸' : '击凹') + '版', v: s.layers.filter(l => l.finish === 'emboss' && embDirOf(l, s.embDir) === dir).map(layerNameOf).join('、') || '—' })))
     .concat([{ k: '四色印刷', v: s.layers.filter(l => l.finish === 'none').length + ' 层' }]);
   const card = { background: '#fdfcf7', border: '1px solid #ded5c4', borderRadius: 10, padding: '18px 20px' };
@@ -80,7 +80,7 @@ export function OutputView() {
             <button onClick={() => runExport(() => exportPDF(s, m, s.pdfMode))} style={{ ...btnSt, padding: '9px 0', border: '1px solid #9a5b1f', fontSize: 13, fontWeight: 700, color: '#9a5b1f' }}>导出印刷 PDF（1:1 · 刀线专色叠印 · 出血）</button>
             <button onClick={() => runExport(() => exportSeparations(s, m))} style={{ ...btnSt, padding: '9px 0', border: '1px solid #9a5b1f', fontSize: 13, fontWeight: 700, color: '#9a5b1f' }}>工艺分版 PDF（烫金/UV/亮面/压纹）</button>
           </div>
-          <div style={{ marginTop: 12, fontSize: 11, lineHeight: 1.65, color: '#8a8071' }}>专业净稿：仅保留普通四色图层，未设计区域为纯白，不写页内说明；烫金/UV/亮面/压纹请另导工艺分版。生产稿保留既有工艺预览与可视说明以兼容旧流程。两种 CMYK 均为 300dpi 朴素转换、无 ICC，不宣称 PDF/X，色彩以印厂打样为准。工艺分版：300dpi DeviceGray 无损 PDF（黑 = 工艺覆盖区，灰虚线 = 刀线参考）。</div>
+          <div style={{ marginTop: 12, fontSize: 11, lineHeight: 1.65, color: '#8a8071' }}>专业净稿：仅保留普通四色图层，未设计区域为纯白，不写页内说明；烫金/UV/亮面/压纹/镭射请另导工艺分版。生产稿保留既有工艺预览与可视说明以兼容旧流程。两种 CMYK 均为 300dpi 朴素转换、无 ICC，不宣称 PDF/X，色彩以印厂打样为准。工艺分版：300dpi DeviceGray 无损 PDF（黑 = 工艺覆盖区，灰虚线 = 刀线参考）。镭射（幻彩）随角度变色无法以 CMYK 表达，数据层只交付覆盖区域：局部用 HOLO-FOIL 镭射版烫印，满版则属镭射膜/镭射卡材料选择。</div>
         </div>
       </div>
     </div>

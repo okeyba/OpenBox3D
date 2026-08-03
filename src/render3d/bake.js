@@ -27,6 +27,21 @@ function tileDraw(ctx, tile, S, tileMm, W, H, op) {
   ctx.restore();
 }
 
+// 低频值噪声（镭射膜厚扰动）：两级随机网格双线性放大后按权重平均，值域约 [0.25, 1]
+function lowFreqNoise(W, H) {
+  const grid = n => {
+    const c = mk(n, n), g = c.getContext('2d'), d = g.createImageData(n, n);
+    for (let i = 0; i < d.data.length; i += 4) { const v = 64 + Math.floor(Math.random() * 192); d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+    g.putImageData(d, 0, 0);
+    return c;
+  };
+  const out = mk(W, H), g = out.getContext('2d');
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.globalAlpha = 0.62; g.drawImage(grid(6), 0, 0, W, H);
+  g.globalAlpha = 0.38; g.drawImage(grid(17), 0, 0, W, H);
+  return out;
+}
+
 // 覆膜切换只重绘两张轻量标量图，不重跑图层、纸纹和法线烘焙。
 export function paintFilmChannels(baked, filmId, controls = {}) {
   if (!baked || !baked.ccC || !baked.ccRC) return;
@@ -58,7 +73,7 @@ export function paintFoilRoughness(baked, value) {
 export function bakeAtlas(o) {
   const { layers, panels, sbb, bleed, paperId, filmId, embDepth, embDir, embBoost } = o;
   const paper = paperPreset(paperId);
-  const foilEnabled = o.foilOn !== false && o.foilOn !== '0', suvEnabled = o.suvOn !== false && o.suvOn !== '0', glossEnabled = o.glossOn !== false && o.glossOn !== '0';
+  const foilEnabled = o.foilOn !== false && o.foilOn !== '0', suvEnabled = o.suvOn !== false && o.suvOn !== '0', glossEnabled = o.glossOn !== false && o.glossOn !== '0', holoEnabled = o.holoOn !== false && o.holoOn !== '0';
   const grainStrength = Math.max(0, Math.min(1.5, o.grainStrength == null ? paper.grainStrength : o.grainStrength));
   const grainScale = Math.max(3, Math.min(20, o.grainScale || paper.grainMm));
   const pad = Math.max(2, bleed || 0);
@@ -78,20 +93,22 @@ export function bakeAtlas(o) {
   cc0.restore();
 
   // —— 工艺 mask：金箔 / 银箔分通道（albedo 分别染 foilColor / silverColor，不再统一染金） ——
-  const foilC = mk(W, H), silverC = mk(W, H), uvC = mk(W, H), glossC = mk(W, H);
-  const fc = foilC.getContext('2d'), sc = silverC.getContext('2d'), uc = uvC.getContext('2d'), gc = glossC.getContext('2d');
+  const foilC = mk(W, H), silverC = mk(W, H), uvC = mk(W, H), glossC = mk(W, H), holoC = mk(W, H);
+  const fc = foilC.getContext('2d'), sc = silverC.getContext('2d'), uc = uvC.getContext('2d'), gc = glossC.getContext('2d'), hc = holoC.getContext('2d');
   fc.save(); fc.translate(-ox * S, -oy * S);
   sc.save(); sc.translate(-ox * S, -oy * S);
   uc.save(); uc.translate(-ox * S, -oy * S);
   gc.save(); gc.translate(-ox * S, -oy * S);
-  let hasFoil = false, hasSilver = false, hasSuv = false, hasGloss = false;
+  hc.save(); hc.translate(-ox * S, -oy * S);
+  let hasFoil = false, hasSilver = false, hasSuv = false, hasGloss = false, hasHolo = false;
   for (const l of vis) {
     if (l.finish === 'foil' && foilEnabled) { drawLayer(fc, l, S, '#fff', clipPtsOf(panels, l)); hasFoil = true; }
     else if (l.finish === 'silver' && foilEnabled) { drawLayer(sc, l, S, '#fff', clipPtsOf(panels, l)); hasSilver = true; }
     else if (l.finish === 'uv' && suvEnabled) { drawLayer(uc, l, S, '#fff', clipPtsOf(panels, l)); hasSuv = true; }
     else if (l.finish === 'gloss' && glossEnabled) { drawLayer(gc, l, S, '#fff', clipPtsOf(panels, l)); hasGloss = true; }
+    else if (l.finish === 'holo' && holoEnabled) { drawLayer(hc, l, S, '#fff', clipPtsOf(panels, l)); hasHolo = true; }
   }
-  fc.restore(); sc.restore(); uc.restore(); gc.restore();
+  fc.restore(); sc.restore(); uc.restore(); gc.restore(); hc.restore();
   const anyFoil = hasFoil || hasSilver;
   const foilColor = typeof o.foilColor === 'string' ? o.foilColor : '#ffdb91', silverColor = typeof o.silverColor === 'string' ? o.silverColor : '#faf7f2';
   if (hasFoil) {
@@ -104,6 +121,12 @@ export function bakeAtlas(o) {
     st.fillStyle = silverColor; st.fillRect(0, 0, W, H);
     maskDraw(colorC, silverTone, silverC);
   }
+  // 镭射区染银白基色（幻彩由 iridescence 随角度产生，albedo 只需浅底）
+  if (hasHolo) {
+    const holoTone = mk(W, H), ht = holoTone.getContext('2d');
+    ht.fillStyle = '#edf1f6'; ht.fillRect(0, 0, W, H);
+    maskDraw(colorC, holoTone, holoC);
+  }
 
   // —— metalness：纸张 metalBase 打底（银卡类全幅金属），金/银箔区并集为白 ——
   const metalBase = Math.max(0, Math.min(1, paper.metalBase || 0));
@@ -115,6 +138,11 @@ export function bakeAtlas(o) {
     fg0.fillStyle = '#fff'; fg0.fillRect(0, 0, W, H);
     if (hasFoil) maskDraw(metalC, full, foilC);
     if (hasSilver) maskDraw(metalC, full, silverC);
+  }
+  if (hasHolo) { // 镭射区并入金属通道：iridescenceMap（=metal 通道）自动覆盖镭射区；0.85 留少量漫反射防死黑
+    const fullH2 = mk(W, H), fh2 = fullH2.getContext('2d');
+    fh2.fillStyle = 'rgb(216,216,216)'; fh2.fillRect(0, 0, W, H);
+    maskDraw(metalC, fullH2, holoC);
   }
 
   // —— 压纹高度：中灰为零，白凸黑凹；顶层覆盖重叠区 ——
@@ -161,6 +189,19 @@ export function bakeAtlas(o) {
     if (hasFoil) maskDraw(roughC, foilR, foilC);
     if (hasSilver) maskDraw(roughC, foilR, silverC);
   }
+  if (hasHolo) { // 镭射区低粗糙（幻彩箔近镜面）
+    const holoR = mk(W, H), hg = holoR.getContext('2d');
+    hg.fillStyle = 'rgb(38,38,38)'; hg.fillRect(0, 0, W, H); // 0.15
+    maskDraw(roughC, holoR, holoC);
+  }
+
+  // —— 镭射膜厚扰动图：白底（=厚度图 Range 上限，与无厚度图行为一致），holo 区叠低频值噪声产生块状多彩 ——
+  const holoThickC = hasHolo ? mk(W, H) : null;
+  if (hasHolo) {
+    const tg = holoThickC.getContext('2d');
+    tg.fillStyle = '#fff'; tg.fillRect(0, 0, W, H);
+    maskDraw(holoThickC, lowFreqNoise(W, H), holoC);
+  }
 
   // —— clearcoat：覆膜基础值（map 驱动）+ 局部 UV 区 ——
   const ccC = mk(W, H), ccRC = mk(W, H);
@@ -176,8 +217,8 @@ export function bakeAtlas(o) {
 
   return {
     colorC, normalPaper, normalFull, roughC, metalC, ccC, ccRC, dispC, checkerC,
-    maskFoil: foilC, maskSilver: silverC, maskUv: uvC, maskGloss: glossC, maskEmbUp: emb.up, maskEmbDown: emb.down,
-    hasFoil: anyFoil, hasSilver, hasSuv, hasGloss, hasEmb, hasEmbUp: emb.hasUp, hasEmbDown: emb.hasDown, S, W, H,
+    maskFoil: foilC, maskSilver: silverC, maskUv: uvC, maskGloss: glossC, maskHolo: holoC, holoThickC, maskEmbUp: emb.up, maskEmbDown: emb.down,
+    hasFoil: anyFoil, hasSilver, hasSuv, hasGloss, hasEmb, hasHolo, hasEmbUp: emb.hasUp, hasEmbDown: emb.hasDown, S, W, H,
     // UV 必须按实际烘焙画布（含出血外扩与像素取整）归一化；若仍使用原始 sbb，
     // 3D 面板边缘会采到出血画布里的纸基色，表现为单侧或三侧漏白/漏黑。
     atlasSbb: [ox, oy, ox + W / S, oy + H / S],

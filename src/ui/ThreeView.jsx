@@ -19,7 +19,7 @@ export function ThreeView() {
   const tplName = (TPLS.find(x => x.id === s.tpl) || TPLS[0]).name;
   const finCount = f => s.layers.filter(l => l.finish === f).length;
   const embCount = dir => s.layers.filter(l => l.finish === 'emboss' && embDirOf(l, s.embDir) === dir).length;
-  const finSummary = '工艺图层：烫金×' + (finCount('foil') + finCount('silver')) + ' · UV×' + finCount('uv') + ' · 亮面×' + finCount('gloss') + ' · 凸×' + embCount('up') + ' · 凹×' + embCount('down') + '（来自设计页）';
+  const finSummary = '工艺图层：烫金×' + (finCount('foil') + finCount('silver')) + ' · UV×' + finCount('uv') + ' · 亮面×' + finCount('gloss') + ' · 镭射×' + finCount('holo') + ' · 凸×' + embCount('up') + ' · 凹×' + embCount('down') + '（来自设计页）';
   // 烘焙输入：整版包围盒 + 全部图层（图集覆盖所有面板，图层放在哪 3D 就显示在哪）
   const preview = boxPreviewContextOf(s, m);
   const coverKey = JSON.stringify({
@@ -93,11 +93,13 @@ export function ThreeView() {
       </Block>
       <Block>
         <ST style={{ marginBottom: 6 }}>工艺样例 · 检查</ST>
-        {[['foil', '烫金层'], ['suv', '局部 UV 层'], ['gloss', '亮面层'], ['emb', '压纹层']].map(x => (
-          <ToggleRow key={x[0]} label={x[1]} on={x[0] === 'gloss' ? s.fx.gloss !== false : s.fx[x[0]]} onClick={() => store.set(st => ({ fx: { ...st.fx, [x[0]]: !(x[0] === 'gloss' ? st.fx.gloss !== false : st.fx[x[0]]) } }))} />
+        {[['foil', '烫金层'], ['suv', '局部 UV 层'], ['gloss', '亮面层'], ['emb', '压纹层'], ['holo', '镭射层']].map(x => (
+          <ToggleRow key={x[0]} label={x[1]} on={x[0] === 'gloss' || x[0] === 'holo' ? s.fx[x[0]] !== false : s.fx[x[0]]} onClick={() => store.set(st => ({ fx: { ...st.fx, [x[0]]: !(x[0] === 'gloss' || x[0] === 'holo' ? st.fx[x[0]] !== false : st.fx[x[0]]) } }))} />
         ))}
         <Range label="亮面粗糙度" value={s.glossRoughness3d} min={0.02} max={0.5} step={0.01} onChange={v => store.set({ glossRoughness3d: v })} />
         <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>数值越低，亮面反光越集中、越清晰。</div>
+        <Range label="镭射强度" value={s.iridescence3d} min={0} max={1} step={0.01} onChange={v => store.set({ iridescence3d: v })} />
+        <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>镭射（幻彩）作用于镭射图层与箔层；随视角变化的彩虹干涉色。</div>
         <ToggleRow label="自动旋转" on={s.spin} onClick={() => store.set(st => ({ spin: !st.spin }))} />
         <div style={{ marginTop: 8 }}>
           <div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>检查模式</div>
@@ -106,6 +108,7 @@ export function ThreeView() {
             <option value="foil">烫金版 · R 通道</option>
             <option value="suv">局部 UV 版 · G 通道</option>
             <option value="gloss">亮面反光通道</option>
+            <option value="holo">镭射版 · 幻彩通道</option>
             <option value="emb">压纹高度 · 白凸 / 黑凹</option>
             <option value="checker">UV 棋盘 · 20mm/格</option>
           </select>

@@ -17,6 +17,7 @@ export async function exportSeparations(s, mat) {
     { key: 'foil', match: l => l.finish === 'foil' || l.finish === 'silver', label: 'HOT-FOIL', cn: '烫金版' },
     { key: 'uv', match: l => l.finish === 'uv', label: 'SPOT-UV', cn: 'UV版' },
     { key: 'gloss', match: l => l.finish === 'gloss', label: 'SPOT-GLOSS', cn: '亮面版' },
+    { key: 'holo', match: l => l.finish === 'holo', label: 'HOLO-FOIL', cn: '镭射版' },
     { key: 'emboss-up', mask: emboss.up, exists: emboss.hasUp, label: 'EMBOSS UP ' + s.embDepth + 'MM', cn: '击凸版' },
     { key: 'emboss-down', mask: emboss.down, exists: emboss.hasDown, label: 'EMBOSS DOWN ' + s.embDepth + 'MM', cn: '击凹版' }
   ];
@@ -52,5 +53,5 @@ export async function exportSeparations(s, mat) {
       pdfTextStream(content)
     ], base + '_' + proc.key + '_plate.pdf');
   }
-  if (!made) alert('没有可分版的工艺图层：请先在「设计」页为图层指定烫金/UV/亮面/压纹工艺。');
+  if (!made) alert('没有可分版的工艺图层：请先在「设计」页为图层指定烫金/UV/亮面/压纹/镭射工艺。');
 }

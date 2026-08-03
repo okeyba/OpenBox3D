@@ -195,13 +195,14 @@ export function DesignView() {
         )}
         <Block>
           <ST>工艺</ST>
-          <select aria-label="图层工艺" value={sel.finish} onChange={e => { const finish = e.target.value; upd({ finish }); if (finish === 'gloss') store.set(st => ({ fx: { ...st.fx, gloss: true } })); }} style={selectSt}>
+          <select aria-label="图层工艺" value={sel.finish} onChange={e => { const finish = e.target.value; upd({ finish }); if (finish === 'gloss') store.set(st => ({ fx: { ...st.fx, gloss: true } })); if (finish === 'holo' && !store.get().iridescence3d) store.set({ iridescence3d: 0.85 }); }} style={selectSt}>
             <option value="none">无（四色印刷）</option>
             <option value="foil">烫金 · R 通道</option>
             <option value="silver">烫银 · R 通道</option>
             <option value="uv">局部 UV · G 通道</option>
             <option value="gloss">亮面 · 反光通道</option>
             <option value="emboss">压纹 · B 通道</option>
+            <option value="holo">镭射 · 幻彩通道</option>
           </select>
           {sel.finish === 'emboss' && (
             <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>

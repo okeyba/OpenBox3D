@@ -1,6 +1,6 @@
 // 图层模型：bbox、DPI、跨压痕/越界警示（移植原型逻辑）
-export const FIN = { none: '', foil: '烫金', silver: '烫银', uv: 'UV', gloss: '亮面', emboss: '压纹' };
-export const FIN_NAMES = { foil: '烫金', silver: '烫银', uv: '局部 UV', gloss: '亮面', emboss: '压纹' };
+export const FIN = { none: '', foil: '烫金', silver: '烫银', uv: 'UV', gloss: '亮面', emboss: '压纹', holo: '镭射' };
+export const FIN_NAMES = { foil: '烫金', silver: '烫银', uv: '局部 UV', gloss: '亮面', emboss: '压纹', holo: '镭射' };
 export const randomImageName = () => '图片·' + Math.random().toString(36).slice(2, 6).toUpperCase();
 export const layerNameOf = l => {
   if (l && typeof l.name === 'string' && l.name.trim()) return l.name.trim();

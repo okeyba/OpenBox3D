@@ -211,6 +211,7 @@ export function SheetCanvas({ view, g, children, onImageDrop }) {
     let fill = l.color || '#211d18', stroke = 'none';
     if (l.finish === 'foil') fill = 'url(#foilG)';
     else if (l.finish === 'silver') fill = 'url(#silvG)';
+    else if (l.finish === 'holo') fill = 'url(#holoG)';
     else if (l.finish === 'emboss') { fill = 'rgba(33,29,24,0.12)'; stroke = 'rgba(33,29,24,0.4)'; }
     const cx = b[0] + b[2] / 2, cy = b[1] + b[3] / 2;
     const rotTf = 'rotate(' + (l.rot || 0) + ' ' + cx + ' ' + cy + ')';
@@ -299,6 +300,9 @@ export function SheetCanvas({ view, g, children, onImageDrop }) {
             </linearGradient>
             <linearGradient id="silvG" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stopColor="#EDEDF2" /><stop offset="0.5" stopColor="#9A9AA4" /><stop offset="1" stopColor="#DCDCE2" />
+            </linearGradient>
+            <linearGradient id="holoG" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#f5c6d6" /><stop offset="0.25" stopColor="#c9c3f0" /><stop offset="0.5" stopColor="#b7dcf5" /><stop offset="0.75" stopColor="#c2f0dd" /><stop offset="1" stopColor="#f7ecc8" />
             </linearGradient>
             {(g.panels || []).map(panel => {
               const id = 'design-panel-' + String(panel.panelId).replace(/[^a-zA-Z0-9_-]/g, '-');
