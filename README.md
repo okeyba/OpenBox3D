@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/brand/toy-banner.jpg" alt="苏哇工作台 · OpenBox3D" width="720">
+<img src="docs/screenshots/three.jpg" alt="苏哇工作台 · OpenBox3D — PBR 3D 折叠预览" width="720">
 
 # OpenBox3D · 苏哇工作台
 
@@ -27,6 +27,19 @@
 - **Zero backend** — everything runs in your browser. No API keys, no cloud, no telemetry.
 
 > This is the open-source edition of the Box3D workbench. It intentionally ships **without** AI image generation, AR/iOS preview, DXF export and the experimental material/environment lab.
+
+## Screenshots
+
+<div align="center">
+<img src="docs/screenshots/structure.jpg" alt="结构工作区 — 参数化刀版" width="700">
+<br><sub>结构 Structure — parametric dieline with thickness compensation, bleed/safe guides and validation</sub>
+<br><br>
+<img src="docs/screenshots/design.jpg" alt="设计工作区 — 分层展开图" width="700">
+<br><sub>设计 Design — layered artwork on the unfolded sheet, with foil / spot-UV / gloss / emboss channels</sub>
+<br><br>
+<img src="docs/screenshots/three.jpg" alt="3D 折叠预览" width="700">
+<br><sub>3D — real-time PBR folding preview with studio scenes and inspection modes</sub>
+</div>
 
 ## Quick Start
 
@@ -98,7 +111,6 @@ OpenBox3D/
 │   ├── preset/        # built-in sample box (edit this to rebrand)
 │   ├── state/         # single-store state
 │   └── ui/            # four workspaces
-└── test-*.html        # manual harness pages for PDF/bake verification
 ```
 
 ### Debug URL parameters

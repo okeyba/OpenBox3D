@@ -1,6 +1,7 @@
 // 2D 画布：结构/设计视图共用 —— SVG 主画布（mm 世界坐标）+ 缩放平移 + 全部拖拽交互
 import React, { useRef, useEffect, useState } from 'react';
 import { store, useStore } from '../state/store.js';
+import { asset } from '../asset.js';
 import { bboxOf } from '../design/layers.js';
 import { bboxOfPts, containerAt, containerOfLayer } from '../design/containers.js';
 
@@ -223,9 +224,9 @@ export function SheetCanvas({ view, g, children, onImageDrop }) {
             {l.imgSrc
               ? (l.crop
                 ? <svg x={l.x} y={l.y} width={l.w} height={l.h} viewBox={[l.crop[0] * 100, l.crop[1] * 100, l.crop[2] * 100, l.crop[3] * 100].join(' ')} preserveAspectRatio="none">
-                  <image href={l.imgSrc} x={0} y={0} width={100} height={100} preserveAspectRatio="none" />
+                  <image href={l.imgSrc[0] === '/' ? asset(l.imgSrc) : l.imgSrc} x={0} y={0} width={100} height={100} preserveAspectRatio="none" />
                 </svg>
-                : <image href={l.imgSrc} x={l.x} y={l.y} width={l.w} height={l.h} preserveAspectRatio="none" />)
+                : <image href={l.imgSrc[0] === '/' ? asset(l.imgSrc) : l.imgSrc} x={l.x} y={l.y} width={l.w} height={l.h} preserveAspectRatio="none" />)
               : (<>
                 <rect x={l.x} y={l.y} width={l.w} height={l.h} fill="#efe9dc" stroke="#b3a88f" strokeWidth={0.4} strokeDasharray="2 1.4" />
                 <line x1={l.x} y1={l.y} x2={l.x + l.w} y2={l.y + l.h} stroke="#cfc4ab" strokeWidth={0.3} />
