@@ -1,0 +1,78 @@
+{
+  "license": {
+    "name": "CC0",
+    "url": "https://polyhaven.com/license"
+  },
+  "assets": [
+    {
+      "id": "studio_small_03",
+      "file": "studio_small_03_1k.hdr",
+      "source": "https://polyhaven.com/a/studio_small_03",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_03_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1686299,
+      "md5": "74e6ef69ea9024c2cc25b3a7de8ec2f7",
+      "note": "亮伞形软箱+白天花板，高反差，~5400K；drei `studio` preset 本尊"
+    },
+    {
+      "id": "studio_small_08",
+      "file": "studio_small_08_1k.hdr",
+      "source": "https://polyhaven.com/a/studio_small_08",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_08_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1508872,
+      "md5": "de3ba64222895aca876b1d1c2e0cf81a",
+      "note": "软箱+无影墙，冷调干净，EV17 ~6000K"
+    },
+    {
+      "id": "studio_small_09",
+      "file": "studio_small_09_1k.hdr",
+      "source": "https://polyhaven.com/a/studio_small_09",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1615248,
+      "md5": "d5d7eb9d26d341d6aa4d11c1a54fd97c",
+      "note": "软箱+无影墙，暖调 2750K，精品氛围"
+    },
+    {
+      "id": "white_studio_03",
+      "file": "white_studio_03_1k.hdr",
+      "source": "https://polyhaven.com/a/white_studio_03",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/white_studio_03_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1390531,
+      "md5": "6d2782035a887a4f649f3929d5900efc",
+      "note": "白色无影棚+伞箱，白底电商首选，~5300K"
+    },
+    {
+      "id": "white_studio_06",
+      "file": "white_studio_06_1k.hdr",
+      "source": "https://polyhaven.com/a/white_studio_06",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/white_studio_06_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1330672,
+      "md5": "d9950d6316c57b1b92494d909bd1a92a",
+      "note": "白色无影棚，高调"
+    },
+    {
+      "id": "cyclorama_hard_light",
+      "file": "cyclorama_hard_light_1k.hdr",
+      "source": "https://polyhaven.com/a/cyclorama_hard_light",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/cyclorama_hard_light_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1409707,
+      "md5": "dc91db55904c205bd6b44e4029972962",
+      "note": "超亮纯白弧形棚，硬光，EV26 ~5400K"
+    },
+    {
+      "id": "photo_studio_01",
+      "file": "photo_studio_01_1k.hdr",
+      "source": "https://polyhaven.com/a/photo_studio_01",
+      "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/photo_studio_01_1k.hdr",
+      "resolution": "1024x512",
+      "bytes": 1597273,
+      "md5": "4c8387fcee212ab164636994067085fe",
+      "note": "冷荧光、中反差，EV15 ~5622K"
+    }
+  ]
+}
