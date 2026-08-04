@@ -89,7 +89,7 @@ export class BoxEngine {
     this.controls.minDistance = 15; this.controls.maxDistance = 5000;
     this.controls.screenSpacePanning = true;
     this.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
-    this.controls.addEventListener('start', () => { this._pauseSpin = Date.now() + 4000; });
+    this.controls.addEventListener('start', () => { this._pauseSpin = Date.now() + 4000; this._fitGoal = null; }); // 用户接管即中断自动适配过渡
     r.domElement.addEventListener('dblclick', () => this.frame());
     // 视角按钮
     const tb = document.createElement('div');
@@ -133,6 +133,7 @@ export class BoxEngine {
     };
     r.domElement.addEventListener('pointerdown', e => {
       if (e.button !== 0) return;
+      this._fitGoal = null; // 用户接管（移动盒子/转盒走自定义分支，不进 OrbitControls start）：中断自动适配过渡
       if (this._mode === 'move') {
         const p = pick(e); if (!p) return;
         this._mvDrag = { p0: p, box0: this.boxRoot.position.clone(), tg0: this.controls.target.clone() };
