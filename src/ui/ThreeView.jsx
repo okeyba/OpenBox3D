@@ -7,7 +7,7 @@ import { BoxPreview, boxPreviewContextOf } from '../render3d/BoxPreview.jsx';
 import { STAGES } from '../render3d/stage.js';
 import { PAPER_PRESETS, FILM_PRESETS, paperPreset, filmPreset } from '../render3d/presets.js';
 import { SCENE_PRESETS, scenePreset, rigToStorePatch } from '../render3d/rig.js';
-import { ST, Block, Toggle, ToggleRow, Note, selectSt, btnSt, inputSt, captureThumb, Range } from './widgets.jsx';
+import { ST, Block, Toggle, ToggleRow, Note, selectSt, btnSt, inputSt, captureThumb, Range, ColorRow } from './widgets.jsx';
 
 export function ThreeView() {
   const s = useStore();
@@ -99,6 +99,7 @@ export function ThreeView() {
         <Range label="亮面粗糙度" value={s.glossRoughness3d} min={0.02} max={0.5} step={0.01} onChange={v => store.set({ glossRoughness3d: v })} />
         <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>数值越低，亮面反光越集中、越清晰。</div>
         <Range label="镭射强度" value={s.iridescence3d} min={0} max={1} step={0.01} onChange={v => store.set({ iridescence3d: v })} />
+        <ColorRow label="镭射底色（素面=银白，改色=彩色镭射箔）" value={s.holoColor3d} onChange={v => store.set({ holoColor3d: v })} />
         <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>镭射（幻彩）作用于镭射图层与箔层；随视角变化的彩虹干涉色。</div>
         <ToggleRow label="自动旋转" on={s.spin} onClick={() => store.set(st => ({ spin: !st.spin }))} />
         <div style={{ marginTop: 8 }}>

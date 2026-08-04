@@ -80,6 +80,13 @@ export function LogoCat({ size = 22, color = '#C9A227', bg = '#211d18' }) {
 // 数值滑杆行：滑杆 + 可直接输入的数值框（Enter/失焦提交，Esc 还原）
 export const monoSt = { fontFamily: "'JetBrains Mono',monospace", fontSize: 10.5, color: '#9a5b1f' };
 
+// 颜色行：标签 + 取色器
+export function ColorRow({ label, value, onChange }) {
+  return <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, fontSize: 10.5, color: '#8a8071' }}>
+    <span>{label}</span><input aria-label={label} type="color" value={value} onChange={e => onChange(e.target.value)} />
+  </div>;
+}
+
 const clampStep = (v, min, max, step) => Math.min(max, Math.max(min, +(Math.round(v / step) * step).toFixed(6)));
 
 export function Range({ label, value, min, max, step = 0.01, suffix = '', onChange }) {

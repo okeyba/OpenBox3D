@@ -134,10 +134,10 @@ export function bakeAtlas(o) {
     st.fillStyle = silverColor; st.fillRect(0, 0, W, H);
     maskDraw(colorC, silverTone, silverC);
   }
-  // 镭射区染银白基色（幻彩由 iridescence 随角度产生，albedo 只需浅底）
+  // 镭射区染底色（默认银白 #edf1f6=素面镭射；holoColor 任意色=彩色镭射箔；幻彩由 iridescence 随角度产生）
   if (hasHolo) {
     const holoTone = mk(W, H), ht = holoTone.getContext('2d');
-    ht.fillStyle = '#edf1f6'; ht.fillRect(0, 0, W, H);
+    ht.fillStyle = typeof o.holoColor === 'string' ? o.holoColor : '#edf1f6'; ht.fillRect(0, 0, W, H);
     maskDraw(colorC, holoTone, holoC);
   }
 

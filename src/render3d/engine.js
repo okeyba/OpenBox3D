@@ -345,7 +345,7 @@ export class BoxEngine {
       grainStrength: this.num('grainStrength', 0.45), grainScale: this.num('grainScale', 8),
       filmClearcoat: this.num('filmClearcoat', NaN), filmClearcoatRoughness: this.num('filmClearcoatRoughness', NaN),
       uvClearcoat: this.num('uvClearcoat', 1), uvRoughness: this.num('uvRoughness', 0.05), foilRoughness: this.num('foilRoughness', 0.22),
-      foilColor: p.foilColor || '#ffdb91', silverColor: p.silverColor || '#faf7f2',
+      foilColor: p.foilColor || '#ffdb91', silverColor: p.silverColor || '#faf7f2', holoColor: p.holoColor || '#edf1f6',
       foilOn: p.foilOn === '1', suvOn: p.suvOn === '1', glossOn: p.glossOn === '1', embOn: p.embOn === '1', holoOn: p.holoOn === '1',
       glossRoughness: this.num('glossRoughness', 0.08),
       embDepth: this.num('embDepth', 0.3), embSharpness: this.num('embSharpness', 0.85), embDir: p.embDir || 'up', embBoost: p.embBoost === '1'

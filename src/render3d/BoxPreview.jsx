@@ -9,7 +9,7 @@ export function boxPreviewContextOf(s, m) {
     layers: s.layers.map(l => ({ k: l.kind, pid: l.panelId, x: l.x, y: l.y, w: l.w, h: l.h, c: l.content, f: l.font, s: l.size, sx: l.scaleX, sy: l.scaleY, wt: l.weight, col: l.color, fin: l.finish, edir: l.embDir, r: l.rot, o: l.opacity, v: l.visible, cw: l.crop, px: l.pxw, im: l.imgSrc ? l.imgSrc.length : 0 })),
     panels: g.panels.map(p => [p.panelId, p.pts]),
     paper: s.paper3d, grain: [s.grainStrength, s.grainScale], fx: s.fx, glossR: s.glossRoughness3d, ed: s.embDepth, es: s.embSharpness3d, edir: s.embDir, eb: s.embBoost, bleed: s.bleed,
-    fc: s.foilColor3d, sc: s.silverColor3d // 箔色进烘焙（albedo 染色）；iridescence 只进材质，不进 bakeKey
+    fc: s.foilColor3d, sc: s.silverColor3d, hc: s.holoColor3d // 箔色/镭射底色进烘焙（albedo 染色）；iridescence 只进材质，不进 bakeKey
   });
   return { g, bakeKey, sbbKey: g.sbb.join(',') };
 }
@@ -29,7 +29,7 @@ export function BoxPreview({ s, m, context, engineRef, fitFold = false, shadowSa
     shadowSoftness={s.shadowSoftness3d} shadowOpacity={s.shadowOpacity3d}
     surfaceRoughness={s.surfaceRoughness} grainStrength={s.grainStrength} grainScale={s.grainScale}
     filmClearcoat={s.filmClearcoat3d} filmClearcoatRoughness={s.filmClearcoatRoughness3d} filmRoughnessFactor={s.filmRoughnessFactor3d} filmSheen={s.filmSheen3d}
-    foilMetalness={s.foilMetalness3d} foilRoughness={s.foilRoughness3d} foilColor={s.foilColor3d} silverColor={s.silverColor3d} iridescence={s.iridescence3d}
+    foilMetalness={s.foilMetalness3d} foilRoughness={s.foilRoughness3d} foilColor={s.foilColor3d} silverColor={s.silverColor3d} holoColor={s.holoColor3d} iridescence={s.iridescence3d}
     uvClearcoat={s.uvClearcoat3d} uvRoughness={s.uvRoughness3d} glossRoughness={s.glossRoughness3d}
     embNormalStrength={s.embNormalStrength3d} embDisplacementStrength={s.embDisplacementStrength3d}
     toneMapping={s.toneMapping3d}
