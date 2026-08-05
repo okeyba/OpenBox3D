@@ -76,9 +76,12 @@ export function applyFaceMaterial(faceMat, appearance, tex, flags) {
   faceMat.sheen = Math.max(paper.sheen || 0, Math.max(0, Math.min(1, appearance.filmSheen == null ? film.sheen : appearance.filmSheen))); faceMat.sheenRoughness = film.id === 'soft' ? 0.82 : 0.9; faceMat.sheenColor.set(0xf7efe3);
   // 镭射：iridescence 薄膜干涉。metalnessMap 是三通道打包贴图——R=iridescence mask、G=膜厚噪声、B=金属度，
   // iridescenceMap 与 iridescenceThicknessMap 复用同一纹理（真机纹理单元上限 16，打包省一个单元）。
-  // IOR 1.8 + 厚度上限 800nm：幻彩在柔白环境下也能显色（1.3/400nm 实测被平均成灰）。
+  // IOR 1.8。厚度区间随 holoSpan（色彩跨度）：下限钉 100nm 保住鲜艳区，上限 320→880nm——
+  // 注意高膜厚端会被灵敏度曲线高斯窗衰减成灰白（实测 800nm 上半段大面积失色），宽跨度靠 G 噪声触底扫出全色谱。
   const iridescence = Math.max(0, Math.min(1, appearance.iridescence || 0));
-  faceMat.iridescence = iridescence; faceMat.iridescenceIOR = 1.8; faceMat.iridescenceThicknessRange = [80, 800];
+  const holoSpan = Number.isFinite(+appearance.holoSpan) ? Math.max(0, Math.min(1, +appearance.holoSpan)) : 0.5;
+  faceMat.iridescence = iridescence; faceMat.iridescenceIOR = 1.8;
+  faceMat.iridescenceThicknessRange = [100, Math.round(320 + 560 * holoSpan)];
   faceMat.iridescenceMap = iridescence > 0 ? tex.metal : null;
   faceMat.iridescenceThicknessMap = iridescence > 0 ? tex.metal : null;
   // 环境能量唯一由 scene.environmentIntensity 控制；材质不再二次叠乘。

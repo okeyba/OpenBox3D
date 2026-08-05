@@ -24,7 +24,7 @@ export function ThreeView() {
   const preview = boxPreviewContextOf(s, m);
   const coverKey = JSON.stringify({
     scene: [s.environment3d, s.stage3d, s.expo3d, s.lightsSpec3d, s.backgroundMode3d, s.backgroundColor3d],
-    material: [s.paper3d, s.film3d, s.surfaceRoughness, s.grainStrength, s.grainScale, s.foilColor3d, s.silverColor3d, s.iridescence3d, s.glossRoughness3d],
+    material: [s.paper3d, s.film3d, s.surfaceRoughness, s.grainStrength, s.grainScale, s.foilColor3d, s.silverColor3d, s.iridescence3d, s.holoSpan3d, s.holoRainbow3d, s.glossRoughness3d],
     camera: [s.cameraProjection3d, s.fov3d]
   });
   const clearFold = () => { clearInterval(pf.current); pf.current = null; };
@@ -99,8 +99,10 @@ export function ThreeView() {
         <Range label="亮面粗糙度" value={s.glossRoughness3d} min={0.02} max={0.5} step={0.01} onChange={v => store.set({ glossRoughness3d: v })} />
         <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>数值越低，亮面反光越集中、越清晰。</div>
         <Range label="镭射强度" value={s.iridescence3d} min={0} max={1} step={0.01} onChange={v => store.set({ iridescence3d: v })} />
+        <Range label="镭射色彩跨度" value={s.holoSpan3d} min={0} max={1} step={0.01} onChange={v => store.set({ holoSpan3d: v })} />
+        <Range label="镭射彩虹底纹" value={s.holoRainbow3d} min={0} max={1} step={0.01} onChange={v => store.set({ holoRainbow3d: v })} />
         <ColorRow label="镭射底色（素面=银白，改色=彩色镭射箔）" value={s.holoColor3d} onChange={v => store.set({ holoColor3d: v })} />
-        <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>镭射（幻彩）作用于镭射图层与箔层；随视角变化的彩虹干涉色。</div>
+        <div style={{ marginTop: 4, fontSize: 10, color: '#a59a85' }}>镭射（幻彩）作用于镭射图层与箔层；随视角变化的彩虹干涉色。跨度越大色相扫掠越宽；彩虹底纹把全色谱渐变烘进纸面（素面镭射卡纸效果）。</div>
         <ToggleRow label="自动旋转" on={s.spin} onClick={() => store.set(st => ({ spin: !st.spin }))} />
         <div style={{ marginTop: 8 }}>
           <div style={{ fontSize: 10.5, color: '#8a8071', marginBottom: 3 }}>检查模式</div>

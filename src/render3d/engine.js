@@ -11,7 +11,7 @@ import { makeStageGround } from './stage.js';
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const STUDIO_CONTROL_KEYS = ['environmentIntensity', 'environmentRotation', 'backgroundShown', 'backgroundMode', 'backgroundColor', 'backgroundBlur', 'domeSpec', 'shadowSoftness', 'shadowOpacity'];
 const FILM_CONTROL_KEYS = ['filmClearcoat', 'filmClearcoatRoughness', 'uvClearcoat', 'uvRoughness'];
-const MATERIAL_CONTROL_KEYS = ['surfaceRoughness', 'filmRoughnessFactor', 'filmSheen', 'foilMetalness', 'iridescence', 'embNormalStrength', 'embDisplacementStrength'];
+const MATERIAL_CONTROL_KEYS = ['surfaceRoughness', 'filmRoughnessFactor', 'filmSheen', 'foilMetalness', 'iridescence', 'holoSpan', 'embNormalStrength', 'embDisplacementStrength'];
 const cameraTypeOf = v => v === 'orthographic' ? 'orthographic' : 'perspective';
 
 export class BoxEngine {
@@ -345,7 +345,7 @@ export class BoxEngine {
       grainStrength: this.num('grainStrength', 0.45), grainScale: this.num('grainScale', 8),
       filmClearcoat: this.num('filmClearcoat', NaN), filmClearcoatRoughness: this.num('filmClearcoatRoughness', NaN),
       uvClearcoat: this.num('uvClearcoat', 1), uvRoughness: this.num('uvRoughness', 0.05), foilRoughness: this.num('foilRoughness', 0.22),
-      foilColor: p.foilColor || '#ffdb91', silverColor: p.silverColor || '#faf7f2', holoColor: p.holoColor || '#edf1f6',
+      foilColor: p.foilColor || '#ffdb91', silverColor: p.silverColor || '#faf7f2', holoColor: p.holoColor || '#edf1f6', holoRainbow: this.num('holoRainbow', 0),
       foilOn: p.foilOn === '1', suvOn: p.suvOn === '1', glossOn: p.glossOn === '1', embOn: p.embOn === '1', holoOn: p.holoOn === '1',
       glossRoughness: this.num('glossRoughness', 0.08),
       embDepth: this.num('embDepth', 0.3), embSharpness: this.num('embSharpness', 0.85), embDir: p.embDir || 'up', embBoost: p.embBoost === '1'
@@ -371,7 +371,7 @@ export class BoxEngine {
     applyFaceMaterial(this.faceMat, {
       paperId: this.props.paper || 'coated-white', filmId: this.props.film || 'none',
       roughness: this.num('surfaceRoughness', 0.48), filmRoughnessFactor: this.num('filmRoughnessFactor', 1), filmSheen: this.num('filmSheen', 0),
-      foilMetalness: this.num('foilMetalness', 1), iridescence: this.num('iridescence', 0), embNormalStrength: this.num('embNormalStrength', 1), embDisplacementStrength: this.num('embDisplacementStrength', 1)
+      foilMetalness: this.num('foilMetalness', 1), iridescence: this.num('iridescence', 0), holoSpan: this.num('holoSpan', 0.5), embNormalStrength: this.num('embNormalStrength', 1), embDisplacementStrength: this.num('embDisplacementStrength', 1)
     }, this._tex, {
       check: this.props.check || 'art',
       embOn: this.props.embOn === '1', hasEmb: (this.baked || {}).hasEmb,

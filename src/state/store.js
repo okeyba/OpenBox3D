@@ -18,7 +18,7 @@ const initial = {
   fold: qp.has('fold') ? +qp.get('fold') : 24, foldFromQuery: qp.has('fold'), mat3d: qp.get('mat3d') || 'sbs', paper3d: initialPaper, film3d: initialFilm,
   surfaceRoughness: paper0.roughness, grainStrength: paper0.grainStrength, grainScale: paper0.grainMm,
   filmClearcoat3d: film0.clearcoat, filmClearcoatRoughness3d: film0.clearcoatRoughness, filmRoughnessFactor3d: film0.roughnessFactor, filmSheen3d: film0.sheen,
-  foilMetalness3d: 1, foilRoughness3d: 0.22, foilColor3d: '#ffdb91', silverColor3d: '#faf7f2', holoColor3d: '#edf1f6', iridescence3d: 0, uvClearcoat3d: 1, uvRoughness3d: 0.05, glossRoughness3d: 0.08,
+  foilMetalness3d: 1, foilRoughness3d: 0.22, foilColor3d: '#ffdb91', silverColor3d: '#faf7f2', holoColor3d: '#edf1f6', iridescence3d: 0, holoSpan3d: qp.has('holoSpan') ? +qp.get('holoSpan') : 0.5, holoRainbow3d: qp.has('holoRainbow') ? +qp.get('holoRainbow') : 0, uvClearcoat3d: 1, uvRoughness3d: 0.05, glossRoughness3d: 0.08,
   embSharpness3d: 0.85, embNormalStrength3d: 1.2, embDisplacementStrength3d: 0.35,
   fx: { foil: qp.get('foil') !== '0', suv: qp.get('suv') === '1', gloss: qp.get('gloss') !== '0', emb: qp.has('emb') }, spin: qp.get('spin') === '1',
   check: qp.get('check') || 'art',
@@ -56,6 +56,14 @@ if (qp.get('surfaceTest') === 'uv') {
     { id: 3, kind: 'shape', x: 0, y: 0, w: 1, h: 1, content: '局部UV', color: '#8c8378', finish: 'uv', visible: true, heroPreset: { x: 0.56, y: 0.43, w: 0.28, h: 0.24 } }
   ];
   initial.fx = { ...initial.fx, foil: false, suv: true }; initial.sel = 3; initial.seq = 4;
+}
+// ?holoTest=1：正面大半版镭射 + 局部镭射块，回归幻彩色谱用
+if (qp.get('holoTest') === '1') {
+  initial.layers = [
+    { id: 1, kind: 'shape', x: 0, y: 0, w: 1, h: 1, content: '镭射整版', color: '#c8c2b8', finish: 'holo', visible: true, heroPreset: { x: 0.08, y: 0.08, w: 0.84, h: 0.6 } },
+    { id: 2, kind: 'shape', x: 0, y: 0, w: 1, h: 1, content: '镭射局部', color: '#c8c2b8', finish: 'holo', visible: true, heroPreset: { x: 0.3, y: 0.74, w: 0.4, h: 0.18 } }
+  ];
+  initial.iridescence3d = 0.85; initial.sel = 1; initial.seq = 3;
 }
 // ?key= 兼容：旧链接用扁平 keyAngle 指定主光方位，v2 改写 lightsSpec3d 中 key 灯的 azimuth
 if (qp.has('key')) {

@@ -40,11 +40,12 @@ function maskMultiply(base, overlay, mask) {
   bg.globalCompositeOperation = 'source-over';
 }
 
-// 低频值噪声（镭射膜厚扰动）：两级随机网格双线性放大后按权重平均，值域约 [0.25, 1]
+// 低频值噪声（镭射膜厚扰动）：两级随机网格双线性放大后按权重平均，值域约 [0, 0.76]
+// （网格取值必须含 0 下限：下限抬高会压缩膜厚实际跨度，幻彩只剩基准色±邻近色）
 function lowFreqNoise(W, H) {
   const grid = n => {
     const c = mk(n, n), g = c.getContext('2d'), d = g.createImageData(n, n);
-    for (let i = 0; i < d.data.length; i += 4) { const v = 64 + Math.floor(Math.random() * 192); d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+    for (let i = 0; i < d.data.length; i += 4) { const v = Math.floor(Math.random() * 256); d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
     g.putImageData(d, 0, 0);
     return c;
   };
@@ -138,6 +139,14 @@ export function bakeAtlas(o) {
   if (hasHolo) {
     const holoTone = mk(W, H), ht = holoTone.getContext('2d');
     ht.fillStyle = typeof o.holoColor === 'string' ? o.holoColor : '#edf1f6'; ht.fillRect(0, 0, W, H);
+    const rb = Math.max(0, Math.min(1, +o.holoRainbow || 0));
+    if (rb > 0) { // 彩虹底纹：对角光谱渐变按强度罩到底色上（素面镭射卡纸的全色谱扫掠是衍射分量，薄膜干涉给不出，烘进 albedo）
+      const grad = ht.createLinearGradient(0, 0, W, H);
+      const cols = ['#ff5f6d', '#ffb35c', '#f7f95c', '#5cf28a', '#5cc8f7', '#7a6df7', '#c95cf2', '#ff5f9e'];
+      const CYC = 3; // 整条图集对角铺 3 轮光谱：单个面板也能落进约一轮完整色相
+      for (let k = 0; k < CYC; k++) cols.forEach((c, i) => grad.addColorStop((k + i / (cols.length - 1)) / CYC, c));
+      ht.globalAlpha = rb; ht.fillStyle = grad; ht.fillRect(0, 0, W, H); ht.globalAlpha = 1;
+    }
     maskDraw(colorC, holoTone, holoC);
   }
 
