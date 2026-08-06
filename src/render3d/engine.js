@@ -472,11 +472,12 @@ export class BoxEngine {
     const tubeHero = this.props.tpl === 'cyl' || this.props.tpl === 'hex';
     const topHero = this.props.tpl === 'mailer' || this.props.tpl === 'lidbase' || this.props.tpl === 'drawer';
     const lowTopHero = topHero && sz.y <= Math.max(sz.x, sz.z) * 0.65;
-    const fitR = rr * (lowTopHero ? 1.85 : 1.1);
+    const FIT = 2; // 取景放宽一倍：盒子约占画面半高（占满全屏太大，2026-08 验收反馈）
+    const fitR = rr * (lowTopHero ? 1.85 : 1.1) * FIT;
     this._fitR = fitR; this._fitH = sz.y;
     const camera = lowTopHero
       ? new T.Vector3(fitR * 0.9, fitR * 0.54, fitR * 0.9)
-      : new T.Vector3(rr * 0.95 * (tubeHero ? -1 : 1), rr * (topHero ? 1.05 : 0.7), rr * 0.95 * (tubeHero ? -1 : 1));
+      : new T.Vector3(rr * 0.95 * FIT * (tubeHero ? -1 : 1), rr * (topHero ? 1.05 : 0.7) * FIT, rr * 0.95 * FIT * (tubeHero ? -1 : 1));
     const target = new T.Vector3(0, Math.max(sz.y * (lowTopHero ? 0.3 : 0.4), lowTopHero ? 10 : 15), 0);
     const orthoHeight = this.camera.isOrthographicCamera
       ? Math.max(60, 2 * camera.distanceTo(target) * Math.tan(T.MathUtils.degToRad(clamp(this.num('fov', 35), 16, 46)) / 2))

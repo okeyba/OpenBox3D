@@ -28,16 +28,14 @@ function flipOf(rotZ, attach) {
 const ROTADD = { far: 0, near: 180, xmin: 90, xmax: 270 };
 const rectPt = (uvRect, up, vp) => [uvRect[0] + up * uvRect[2], uvRect[1] + (1 - vp) * uvRect[3]];
 
-// 背面图集会在合盖时绕 X 翻到外侧，需额外翻 v 抵消背面观察产生的上下镜像。
 // 面板顶面 UV 重写：顶点(局部 x,y) → 归一(rotZ) → flip → uvRect → 图集 UV；内面 → 纸色角点
-function retopUV(geo, lx, ly, rotZ, flip, uvRect, sbb, innerUV, faceZ, atlasFace) {
+function retopUV(geo, lx, ly, rotZ, flip, uvRect, sbb, innerUV, faceZ) {
   const pos = geo.attributes.position, uv = geo.attributes.uv;
   const sw = sbb[2] - sbb[0], sh = sbb[3] - sbb[1];
   const map = i => {
     let [up, vp] = normUV(pos.getX(i) / lx, pos.getY(i) / ly, rotZ);
     if (flip.includes('u')) up = 1 - up;
     if (flip.includes('v')) vp = 1 - vp;
-    if (atlasFace === 'back') vp = 1 - vp;
     const [x2, y2] = rectPt(uvRect, up, vp);
     uv.setXY(i, (x2 - sbb[0]) / sw, 1 - (y2 - sbb[1]) / sh);
   };
@@ -45,8 +43,7 @@ function retopUV(geo, lx, ly, rotZ, flip, uvRect, sbb, innerUV, faceZ, atlasFace
     // ExtrudeGeometry：group0 = 顶/底面（z=faceZ 为外面），group1 = 侧面（不动）
     const g0 = geo.groups[0];
     for (let i = g0.start; i < g0.start + g0.count; i++) {
-      const targetZ = atlasFace === 'back' ? 0 : faceZ;
-      if (Math.abs(pos.getZ(i) - targetZ) < 1e-6) map(i);
+      if (Math.abs(pos.getZ(i) - faceZ) < 1e-6) map(i);
       else uv.setXY(i, innerUV[0], innerUV[1]);
     }
   }
@@ -54,17 +51,15 @@ function retopUV(geo, lx, ly, rotZ, flip, uvRect, sbb, innerUV, faceZ, atlasFace
 }
 
 // BoxGeometry（矩形板）：pz 面 = 外面（重映射 + 可高细分承载压纹置换），nz/侧面 = 纸色/纸芯
-function boxUV(geo, lx, ly, t, rotZ, flip, uvRect, sbb, innerUV, atlasFace) {
+function boxUV(geo, lx, ly, t, rotZ, flip, uvRect, sbb, innerUV) {
   const pos = geo.attributes.position, uv = geo.attributes.uv;
   const sw = sbb[2] - sbb[0], sh = sbb[3] - sbb[1];
   for (let i = 0; i < pos.count; i++) {
     const z = pos.getZ(i);
-    const targetZ = atlasFace === 'back' ? 0 : t;
-    if (Math.abs(z - targetZ) < 1e-6) {
+    if (Math.abs(z - t) < 1e-6) {
       let [up, vp] = normUV(pos.getX(i) / lx, pos.getY(i) / ly, rotZ);
       if (flip.includes('u')) up = 1 - up;
       if (flip.includes('v')) vp = 1 - vp;
-      if (atlasFace === 'back') vp = 1 - vp;
       const [x2, y2] = rectPt(uvRect, up, vp);
       uv.setXY(i, (x2 - sbb[0]) / sw, 1 - (y2 - sbb[1]) / sh);
     } else uv.setXY(i, innerUV[0], innerUV[1]);
@@ -118,7 +113,7 @@ export class Folder {
     if (edge === 'xmax') return { px: lx, py: ly, rz: -Math.PI / 2, len: ly };
     return { px: 0, py: 0, rz: Math.PI / 2, len: ly }; // xmin
   }
-  panelMesh(kind, len, out, rotZ, flip, uvRect, spec) {
+  panelMesh(kind, len, out, rotZ, flip, uvRect) {
     const T = this.T, t = this._t;
     let geo;
     if (kind === 'rect') {
@@ -127,10 +122,10 @@ export class Folder {
       const segY = this.hasEmb ? Math.max(40, Math.min(240, Math.round(out * 2.2))) : 1;
       geo = new T.BoxGeometry(len, out, t, seg, segY, 1);
       geo.translate(len / 2, out / 2, t / 2);
-      boxUV(geo, len, out, t, rotZ, flip, uvRect, this.sbb, this.innerUV, spec && spec.atlasFace);
+      boxUV(geo, len, out, t, rotZ, flip, uvRect, this.sbb, this.innerUV);
     } else {
       geo = new T.ExtrudeGeometry(shapeOf(T, kind, len, out, this._shapeN), { depth: t, bevelEnabled: false, curveSegments: 6 });
-      retopUV(geo, len, out, rotZ, flip, uvRect, this.sbb, this.innerUV, t, spec && spec.atlasFace);
+      retopUV(geo, len, out, rotZ, flip, uvRect, this.sbb, this.innerUV, t);
     }
     const m = new T.Mesh(geo, [this.faceMat, this.coreMat]);
     m.castShadow = true; m.receiveShadow = true;
@@ -140,7 +135,7 @@ export class Folder {
     const T = this.T;
     if (depth === 0) {
       const rz = spec.uvRot || 0;
-      const rootMesh = this.panelMesh('rect', spec.lx, spec.ly, rz, flipOf(rz, spec.attach), spec.uv, spec);
+      const rootMesh = this.panelMesh('rect', spec.lx, spec.ly, rz, flipOf(rz, spec.attach), spec.uv);
       rootMesh.userData.panel = { panelId: spec.panelId, role: spec.role, surface: spec.surface, up: spec.up, heroRegion: spec.heroRegion };
       parentGroup.add(rootMesh);
       for (const kid of (spec.kids || [])) this.buildNode(parentGroup, spec, kid, 1, pc, rz);
@@ -151,7 +146,7 @@ export class Folder {
     const g = new T.Group(); g.position.set(f.px, f.py, 0); g.rotation.z = f.rz;
     const fg = new T.Group(); g.add(fg);
     this._shapeN = spec.n || null;
-    const mesh = this.panelMesh(spec.shape || 'rect', f.len, spec.out, rz, flipOf(rz, spec.attach), spec.uv, spec);
+    const mesh = this.panelMesh(spec.shape || 'rect', f.len, spec.out, rz, flipOf(rz, spec.attach), spec.uv);
     mesh.userData.panel = { panelId: spec.panelId, role: spec.role, surface: spec.surface, up: spec.up, heroRegion: spec.heroRegion };
     this._shapeN = null;
     // 纸层堆叠：副翼类面板沿法向内缩，消除合盖后的共面 z-fighting
@@ -191,6 +186,10 @@ export class Folder {
     const kF = hasAsm ? clamp(k / 0.68, 0, 1) : k;
     const kA = hasAsm ? clamp((k - 0.7) / 0.3, 0, 1) : 0;
     const ke = ss(kF);
+    // 翻件（flip）：一律向纸色面折叠（sign=-1）的盒型折完后盒体挂在幅面下方，
+    // 绕世界 x 轴整体翻 180° 立正——与 rte 的 stand 同生态位；窗口避开折叠与装配末段
+    const flipWin = hasAsm ? [0.7, 0.85] : [0.85, 1];
+    const kFlip = ss(clamp((k - flipWin[0]) / (flipWin[1] - flipWin[0]), 0, 1));
     const D = this.maxDepth || 1;
     for (const n of this.nodes) {
       const kd = clamp(kF * D - (D - n.depth), 0, 1);
@@ -198,9 +197,15 @@ export class Folder {
       n.fg.rotation.x = n.sign * e * n.angle;
     }
     for (const pc of (pieces || [])) {
-      pc.pg.position.y = 0.5 + (pc.sign < 0 ? ke * pc.lift : 0);
+      // 升力：折叠期把幅面抬离地面（盒体下垂不穿地），翻件/装配阶段收回
+      const liftK = pc.flip ? ke * (1 - kFlip) : pc.asm && pc.sign < 0 ? ke * (1 - kA) : ke;
+      pc.pg.position.y = 0.5 + (pc.sign < 0 ? liftK * (pc.lift || 0) : 0);
+      // 翻件（flip）：绕世界 x 轴把下垂盒体转正——= pg.rotation.x 从 -π/2 连续转到 +π/2，
+      // 等效印刷面朝下折起（real 折叠物理：对侧墙板朝向相反），不做 y 轴翻件（会把墙板文字转反）
+      pc.pg.rotation.x = -Math.PI / 2 + (pc.flip ? Math.PI * kFlip : 0);
       const pv = pc.pivot; if (!pv) continue;
-      pv.position.set(pc.off[0], 0, pc.off[1]); pv.rotation.set(0, 0, 0);
+      // 翻件绕 x 轴后世界 z 足迹平移 ly，补回原位
+      pv.position.set(pc.off[0], 0, pc.off[1] - (pc.flip ? pc.tree.ly * kFlip : 0)); pv.rotation.set(0, 0, 0);
       if (pc.stand) {
         const kS2 = ss(clamp((k - 0.85) / 0.15, 0, 1));
         pv.rotation.x = Math.PI / 2 * kS2;
@@ -211,12 +216,13 @@ export class Folder {
       if (pc.asm.type === 'lid') {
         const hh = pc.asm.hh, L2 = pc.asm.lx, W2 = pc.asm.ly;
         const kH = ss(kA / 0.6), kV = ss((kA - 0.6) / 0.4);
-        const tx = -(L2 - L) / 2, tz = -W - (W2 - W) / 2;
+        const tx = -(L2 - L) / 2;
         const hover = H + hh + 16;
-        pv.rotation.x = Math.PI * kH;                     // 翻面：盖口朝下
+        // sign=-1 折叠后盖口已朝下，直接平移到盒体上方落下（无翻面：z 足迹不再镜像，
+        // 盖 z 区间 [z−W2, z]，居中对准盒体 [−W,0] 需 z=(W2−W)/2）
         pv.position.x = pc.off[0] + (tx - pc.off[0]) * kH;
-        pv.position.z = tz * kH;
-        pv.position.y = hover * kH - (hover - (H + t + 0.95)) * kV;
+        pv.position.z = ((W2 - W) / 2) * kH;
+        pv.position.y = hover * kH - (hover - (H + t - 0.05)) * kV;
       } else if (pc.asm.type === 'drawer') {
         const kS = ss(kA);
         const target = pc.asm.d - L * 0.15;               // 末态留 15% 抽出
@@ -274,7 +280,7 @@ export function makePieces(tpl, L, W, H, t, glue) {
       lx: L, ly: W, uv: [0, y2, Lc, Wb], kids: [
         {
           edge: 'far', out: H, uv: [0, y1, Lc, Hb], attach: 't', kids: [{
-            edge: 'far', out: W, uv: [0, 0, Lc, Wl], panelId: 'mailer-lid', role: 'hero', surface: 'outside', up: 'top', atlasFace: 'back', attach: 't', kids: [
+            edge: 'far', out: W, uv: [0, 0, Lc, Wl], panelId: 'mailer-lid', role: 'hero', surface: 'outside', up: 'top', attach: 't', kids: [
               { edge: 'far', out: tk2, shape: 'tuck', angle: 100, uv: [0, -tk2, Lc, tk2], attach: 't' },
               { edge: 'xmin', out: dw, shape: 'dust', uv: [-dw, 0, dw, y1], attach: 'l' },
               { edge: 'xmax', out: dw, shape: 'dust', uv: [Lc, 0, dw, y1], attach: 'r' }]
@@ -291,7 +297,7 @@ export function makePieces(tpl, L, W, H, t, glue) {
         }
       ]
     };
-    return [{ tree, sign: 1, lift: 0, off: [0, 0] }];
+    return [{ tree, sign: -1, lift: H, off: [0, 0], flip: 1 }];
   }
   const tray = (Lt, Wt, hh, ox) => {
     const eo = Math.min(hh, Wt * 0.85);
@@ -318,8 +324,8 @@ export function makePieces(tpl, L, W, H, t, glue) {
     const L2 = L + 2 * t + 1, W2 = W + 2 * t + 1, D = L + 2 * H + 45;
     const ox2 = 2 * H + L + 28;
     return [
-      { tree: tray(L, W, H, 0), sign: 1, lift: 0, off: [0, 0] },
-      { tree: { ...tray(L2, W2, hh2, ox2), panelId: 'lid-top', role: 'hero', surface: 'outside', up: 'top', atlasFace: 'back' }, sign: 1, lift: 0, off: [D, 0], asm: { type: 'lid', hh: hh2, lx: L2, ly: W2 } }
+      { tree: tray(L, W, H, 0), sign: -1, lift: H, off: [0, 0], flip: 1 },
+      { tree: { ...tray(L2, W2, hh2, ox2), panelId: 'lid-top', role: 'hero', surface: 'outside', up: 'top' }, sign: -1, lift: hh2, off: [D, 0], asm: { type: 'lid', hh: hh2, lx: L2, ly: W2 } }
     ];
   }
   // 卷筒盒（圆柱 24 棱 / 六边形 6 棱）：p0 根段 → xmax 出 p1 → far 逐段卷合；正 N 边形顶/底盖
