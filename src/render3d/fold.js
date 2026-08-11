@@ -95,7 +95,7 @@ function shapeOf(T, kind, len, out, n) {
     S.moveTo(0.5, 0); S.lineTo(len - 0.5, 0); S.lineTo(len - 0.5, out - rr);
     q(len - 0.5, out, len - 0.5 - rr, out); S.lineTo(2, out); S.lineTo(0.5, out - 2);
   } else if (kind === 'lid') {
-    S.moveTo(0, 0); S.lineTo(len, 0); S.lineTo(len - 1, out); S.lineTo(1, out);
+    S.moveTo(0, 0); S.lineTo(len, 0); S.lineTo(len, out); S.lineTo(0, out); // 方形盖（2026-08 起，与 2D flapLid 同步去 1mm 内收）
   } else {
     S.moveTo(0, 0); S.lineTo(len, 0); S.lineTo(len, out); S.lineTo(0, out);
   }

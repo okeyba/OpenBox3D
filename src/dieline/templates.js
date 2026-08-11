@@ -77,7 +77,7 @@ export function genTuck(c, s, t, reverse) {
     if (i === e.lid) {
       flapLid(c, x0, x1, e.yb, e.sgn, lidH, tk);
       const y1 = e.yb + e.sgn * lidH;
-      c.region([[x0, e.yb], [x0 + 1, y1], [x1 - 1, y1], [x1, e.yb]], { panelId: e.panelId, surface: 'outside', up: 'top' });
+      c.region([[x0, e.yb], [x0, y1], [x1, y1], [x1, e.yb]], { panelId: e.panelId, surface: 'outside', up: 'top' });
     }
     else if (i % 2 === 0) flapDust(c, x0, x1, e.yb, e.sgn, dh);
     else c.cut([[x0, e.yb], [x1, e.yb]]);
@@ -90,7 +90,7 @@ export function genTuck(c, s, t, reverse) {
 
 function flapLid(c, x0, x1, yb, sgn, lidH, tk) {
   const y1 = yb + sgn * lidH, y2 = yb + sgn * (lidH + tk);
-  const a = x0 + 1, b = x1 - 1, sl = x0 + 5, sr = x1 - 5, r = 3.5;
+  const a = x0, b = x1, sl = x0 + 5, sr = x1 - 5, r = 3.5; // 盖身侧边取直（2026-08 起方形盖，原 1mm 内收梯形已废）
   const pts = [[x0, yb], [a, y1], [sl, y1 + sgn * 2.5], [sl, y2 - sgn * r]]
     .concat(c.q([sl, y2 - sgn * r], [sl, y2], [sl + r, y2], 'tr').slice(1))
     .concat([[sr - r, y2]])
