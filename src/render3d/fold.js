@@ -254,21 +254,21 @@ export function makePieces(tpl, L, W, H, t, glue) {
           {
             edge: 'far', out: L, uv: [xs3, 0, L + 2 * t, bh], attach: 'r', kids: [
               ...(tpl === 'rte' ? [{
-                edge: 'xmax', out: W, shape: 'lid', uv: [xs3, bh, L + 2 * t, lidH], attach: 'b', kids: [
-                  { edge: 'far', out: tk, shape: 'tuck', angle: 100, uv: [xs3, bh + lidH, L + 2 * t, tk], attach: 'b' }]
+                edge: 'xmin', out: W, shape: 'lid', uv: [xs3, -lidH, L + 2 * t, lidH], attach: 't', kids: [
+                  { edge: 'far', out: tk, shape: 'tuck', angle: 100, uv: [xs3, -lidH - tk, L + 2 * t, tk], attach: 't' }]
               }] : [])
             ]
           }]
       },
-      {
+      ...(tpl === 'ste' ? [{
         edge: 'far', out: W, shape: 'lid', uv: [xs1, -lidH, L + t, lidH], attach: 't', kids: [
           { edge: 'far', out: tk, shape: 'tuck', angle: 100, uv: [xs1, -lidH - tk, L + t, tk], attach: 't' }]
+      }] : []),
+      {
+        edge: 'near', out: W, shape: 'lid', uv: [xs1, bh, L + t, lidH], attach: 'b', kids: [
+          { edge: 'far', out: tk, shape: 'tuck', angle: 100, uv: [xs1, bh + lidH, L + t, tk], attach: 'b' }]
       }
     ];
-    if (tpl === 'ste') kids.push({
-      edge: 'near', out: W, shape: 'lid', uv: [xs1, bh, L + t, lidH], attach: 'b', kids: [
-        { edge: 'far', out: tk, shape: 'tuck', angle: 100, uv: [xs1, bh + lidH, L + t, tk], attach: 'b' }]
-    });
     return [{ tree: { lx: L, ly: H, uv: [xs1, 0, L + t, bh], panelId: 'front', role: 'hero', surface: 'outside', up: 'top', kids }, sign: -1, lift: W, off: [0, 0], stand: true }];
   }
   if (tpl === 'mailer') {

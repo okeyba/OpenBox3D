@@ -71,7 +71,8 @@ export function genTuck(c, s, t, reverse) {
   for (let i = 1; i < 4; i++) c.crease([[xs[i], 0], [xs[i], bh]]);
   c.cut([[xs[4], 0], [xs[4], bh]]);
   const lidH = W + t, tk = Math.min(16, W * 0.55), dh = Math.min(W * 0.75, 32);
-  const ends = [{ yb: 0, sgn: -1, lid: 1, panelId: 'top' }, { yb: bh, sgn: 1, lid: reverse ? 3 : 1, panelId: 'bottom' }];
+  // 盖的挂接列：rte 顶盖挂背面、底盖挂正面（2026-08-12 对调，与 box3d-app 同步）；ste 两盖仍同挂正面
+  const ends = [{ yb: 0, sgn: -1, lid: reverse ? 3 : 1, panelId: 'top' }, { yb: bh, sgn: 1, lid: 1, panelId: 'bottom' }];
   for (const e of ends) for (let i = 0; i < 4; i++) {
     const x0 = xs[i], x1 = xs[i + 1];
     if (i === e.lid) {
