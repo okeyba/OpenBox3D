@@ -2,6 +2,7 @@
 // 纯函数风格：f(params, board) → 线段/填充/标注集合，几何一律以 mm 为基本单位
 
 export const MATS = [
+  { id: 'art200', name: '薄铜版纸 200g', t: 0.22, bleed: 3, note: '轻薄彩盒/裱纸' },
   { id: 'sbs350', name: '白卡 350g', t: 0.45, bleed: 3, note: '折叠纸盒' },
   { id: 'sbs400', name: '白卡 400g', t: 0.5, bleed: 3, note: '折叠纸盒' },
   { id: 'art300', name: '铜版纸 300g', t: 0.35, bleed: 3, note: '裱糊/卡盒' },

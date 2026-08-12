@@ -321,7 +321,7 @@ export class BoxEngine {
       this.boxRoot.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     }
     const L = this.num('l', 80), W = this.num('w', 40), H = this.num('h', 120);
-    const t = Math.max(0.3, this.num('t', 0.45));
+    const t = Math.max(0.2, this.num('t', 0.45)); // 下限 0.2：art200(t=0.22) 薄纸在 3D 里保持真实厚度
     this._dims = { L, W, H, t };
     const sbb = (this.baked && this.baked.atlasSbb) || this.props.sbb || [0, 0, 100, 100];
     this.folder = new Folder(T, sbb, (this.baked || {}).innerUV);
@@ -345,7 +345,7 @@ export class BoxEngine {
       grainStrength: this.num('grainStrength', 0.45), grainScale: this.num('grainScale', 8),
       filmClearcoat: this.num('filmClearcoat', NaN), filmClearcoatRoughness: this.num('filmClearcoatRoughness', NaN),
       uvClearcoat: this.num('uvClearcoat', 1), uvRoughness: this.num('uvRoughness', 0.05), foilRoughness: this.num('foilRoughness', 0.22),
-      foilColor: p.foilColor || '#ffdb91', silverColor: p.silverColor || '#faf7f2', holoColor: p.holoColor || '#edf1f6', holoRainbow: this.num('holoRainbow', 0),
+      foilColor: p.foilColor || '#ffdb91', silverColor: p.silverColor || '#faf7f2', holoColor: p.holoColor || '#edf1f6', paperTint: p.paperTint || '', holoRainbow: this.num('holoRainbow', 0),
       foilOn: p.foilOn === '1', suvOn: p.suvOn === '1', glossOn: p.glossOn === '1', embOn: p.embOn === '1', holoOn: p.holoOn === '1',
       glossRoughness: this.num('glossRoughness', 0.08),
       embDepth: this.num('embDepth', 0.3), embSharpness: this.num('embSharpness', 0.85), embDir: p.embDir || 'up', embBoost: p.embBoost === '1'

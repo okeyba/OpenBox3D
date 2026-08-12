@@ -100,7 +100,7 @@ export function bakeAtlas(o) {
 
   // —— albedo：纸基色 →（kraft 纤维正片叠底）→ 图层 ——
   const colorC = mk(W, H), cc0 = colorC.getContext('2d');
-  cc0.fillStyle = paper.color; cc0.fillRect(0, 0, W, H);
+  cc0.fillStyle = o.paperTint || paper.color; cc0.fillRect(0, 0, W, H); // 纸张底色（用户设置时覆盖纸种预设基色）
   if (paper.grain === 'kraft') { cc0.save(); cc0.globalAlpha = Math.min(0.3, grainStrength * 0.28); tileDraw(cc0, kraftFiberTile(), S, grainScale, W, H, 'multiply'); cc0.restore(); }
   cc0.save(); cc0.translate(-ox * S, -oy * S);
   for (const l of vis) drawLayer(cc0, l, S, undefined, clipPtsOf(panels, l));

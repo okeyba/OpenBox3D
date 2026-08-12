@@ -9,7 +9,7 @@ export function boxPreviewContextOf(s, m) {
     layers: s.layers.map(l => ({ k: l.kind, pid: l.panelId, x: l.x, y: l.y, w: l.w, h: l.h, c: l.content, f: l.font, s: l.size, sx: l.scaleX, sy: l.scaleY, wt: l.weight, col: l.color, fin: l.finish, edir: l.embDir, r: l.rot, o: l.opacity, v: l.visible, cw: l.crop, px: l.pxw, im: l.imgSrc ? l.imgSrc.length : 0 })),
     panels: g.panels.map(p => [p.panelId, p.pts]),
     paper: s.paper3d, grain: [s.grainStrength, s.grainScale], fx: s.fx, glossR: s.glossRoughness3d, ed: s.embDepth, es: s.embSharpness3d, edir: s.embDir, eb: s.embBoost, bleed: s.bleed,
-    fc: s.foilColor3d, sc: s.silverColor3d, hc: s.holoColor3d, rbw: s.holoRainbow3d // 箔色/镭射底色/彩虹底纹进烘焙（albedo 染色）；iridescence/跨度只进材质，不进 bakeKey
+    fc: s.foilColor3d, sc: s.silverColor3d, hc: s.holoColor3d, rbw: s.holoRainbow3d, pt: s.paperTint3d // 箔色/镭射底色/彩虹底纹/纸张底色进烘焙（albedo 染色）；iridescence/跨度只进材质，不进 bakeKey
   });
   return { g, bakeKey, sbbKey: g.sbb.join(',') };
 }
@@ -17,7 +17,7 @@ export function boxPreviewContextOf(s, m) {
 export function BoxPreview({ s, m, context, engineRef, fitFold = false, shadowSamples = 5, lightEdit = '0', selLight = '', onLightSelect, onLightEdit }) {
   const ctx = context || boxPreviewContextOf(s, m);
   return <BoxCanvas
-    l={s.L} w={s.W} h={s.H} t={m.t} tpl={s.tpl} fold={s.fold} paper={s.paper3d} film={s.film3d} glue={s.glue}
+    l={s.L} w={s.W} h={s.H} t={m.t} tpl={s.tpl} fold={s.fold} paper={s.paper3d} film={s.film3d} glue={s.glue} paperTint={s.paperTint3d}
     layers={s.layers} panels={ctx.g.panels} sbb={ctx.g.sbb} bleed={s.bleed} sbbKey={ctx.sbbKey} bakeKey={ctx.bakeKey}
     foilOn={s.fx.foil ? '1' : '0'} suvOn={s.fx.suv ? '1' : '0'} glossOn={s.fx.gloss !== false ? '1' : '0'} embOn={s.fx.emb ? '1' : '0'} holoOn={s.fx.holo !== false ? '1' : '0'}
     spin={s.spin ? '1' : '0'} check={s.check}

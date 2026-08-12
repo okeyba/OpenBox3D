@@ -18,7 +18,7 @@ const initial = {
   fold: qp.has('fold') ? +qp.get('fold') : 24, foldFromQuery: qp.has('fold'), mat3d: qp.get('mat3d') || 'sbs', paper3d: initialPaper, film3d: initialFilm,
   surfaceRoughness: paper0.roughness, grainStrength: paper0.grainStrength, grainScale: paper0.grainMm,
   filmClearcoat3d: film0.clearcoat, filmClearcoatRoughness3d: film0.clearcoatRoughness, filmRoughnessFactor3d: film0.roughnessFactor, filmSheen3d: film0.sheen,
-  foilMetalness3d: 1, foilRoughness3d: 0.22, foilColor3d: '#ffdb91', silverColor3d: '#faf7f2', holoColor3d: '#edf1f6', iridescence3d: 0, holoSpan3d: qp.has('holoSpan') ? +qp.get('holoSpan') : 0.5, holoRainbow3d: qp.has('holoRainbow') ? +qp.get('holoRainbow') : 0, uvClearcoat3d: 1, uvRoughness3d: 0.05, glossRoughness3d: 0.08,
+  foilMetalness3d: 1, foilRoughness3d: 0.22, foilColor3d: '#ffdb91', silverColor3d: '#faf7f2', holoColor3d: '#edf1f6', iridescence3d: 0, paperTint3d: '', holoSpan3d: qp.has('holoSpan') ? +qp.get('holoSpan') : 0.5, holoRainbow3d: qp.has('holoRainbow') ? +qp.get('holoRainbow') : 0, uvClearcoat3d: 1, uvRoughness3d: 0.05, glossRoughness3d: 0.08,
   embSharpness3d: 0.85, embNormalStrength3d: 1.2, embDisplacementStrength3d: 0.35,
   fx: { foil: qp.get('foil') !== '0', suv: qp.get('suv') === '1', gloss: qp.get('gloss') !== '0', emb: qp.has('emb') }, spin: qp.get('spin') === '1',
   check: qp.get('check') || 'art',

@@ -8,7 +8,7 @@ const isColor = v => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
 
 // 白名单：type range=[min,max] | enum=数组 | color | boolean
 const FIELDS = {
-  paper3d: { enum: PAPER_PRESETS.map(x => x.id) }, film3d: { enum: FILM_PRESETS.map(x => x.id) },
+  paper3d: { enum: PAPER_PRESETS.map(x => x.id) }, film3d: { enum: FILM_PRESETS.map(x => x.id) }, paperTint3d: { color: true }, // 纸张底色：''=不覆盖，跟随纸种预设基色
   surfaceRoughness: { range: [0.12, 1] }, grainStrength: { range: [0, 1.2] }, grainScale: { range: [3, 20] },
   filmClearcoat3d: { range: [0, 1] }, filmClearcoatRoughness3d: { range: [0, 1] }, filmRoughnessFactor3d: { range: [0.25, 1.4] }, filmSheen3d: { range: [0, 1] },
   foilColor3d: { color: true }, silverColor3d: { color: true }, holoColor3d: { color: true }, foilMetalness3d: { range: [0, 1] }, foilRoughness3d: { range: [0.04, 0.65] }, iridescence3d: { range: [0, 1] }, holoSpan3d: { range: [0, 1] }, holoRainbow3d: { range: [0, 1] },
@@ -17,7 +17,7 @@ const FIELDS = {
 };
 
 export const DEFAULT_MATERIAL = {
-  paper3d: 'coated-white', film3d: 'none',
+  paper3d: 'coated-white', film3d: 'none', paperTint3d: '',
   surfaceRoughness: 0.48, grainStrength: 0.45, grainScale: 8,
   filmClearcoat3d: 0, filmClearcoatRoughness: 0.5, filmRoughnessFactor3d: 1, filmSheen3d: 0,
   foilColor3d: '#ffdb91', silverColor3d: '#faf7f2', holoColor3d: '#edf1f6', foilMetalness3d: 1, foilRoughness3d: 0.22, iridescence3d: 0, holoSpan3d: 0.5, holoRainbow3d: 0,
