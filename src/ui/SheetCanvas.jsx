@@ -337,7 +337,7 @@ export function SheetCanvas({ view, g, children, onImageDrop }) {
             {snapG && (
               <g>
                 {snapG.v != null && <line x1={snapG.v} y1={g.sbb[1] - 15} x2={snapG.v} y2={g.sbb[3] + 15} stroke="#d6318c" strokeWidth={1} strokeDasharray="4 3" style={{ vectorEffect: 'non-scaling-stroke' }} />}
-                {snapG.h != null && <line x1={g.sbb[0] - 15} y1={snapG.h} x2={g.sbb[3] + 15} y2={snapG.h} stroke="#d6318c" strokeWidth={1} strokeDasharray="4 3" style={{ vectorEffect: 'non-scaling-stroke' }} />}
+                {snapG.h != null && <line x1={g.sbb[0] - 15} y1={snapG.h} x2={g.sbb[2] + 15} y2={snapG.h} stroke="#d6318c" strokeWidth={1} strokeDasharray="4 3" style={{ vectorEffect: 'non-scaling-stroke' }} />}
               </g>
             )}
             {renderSelOverlay()}
